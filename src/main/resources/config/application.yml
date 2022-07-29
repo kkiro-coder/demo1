@@ -1,0 +1,20 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    username: root
+    password: 8023
+    url: jdbc:mysql://localhost:3306/demo1110?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=false&rewriteBatchedStatements=true
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+  redis:
+    host: 192.168.5.3
+    port: 6380
+
+tcp:
+  ip: 127.0.0.1
+  port: 8090
