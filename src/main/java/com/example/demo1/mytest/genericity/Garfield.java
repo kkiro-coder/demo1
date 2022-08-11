@@ -1,8 +1,8 @@
 package com.example.demo1.mytest.genericity;
 
-public class Caffi extends Cat{
+public class Garfield extends Cat{
     @Override
     public String toString() {
-        return "Caffi";
+        return "cat-Garfield";
     }
 }
