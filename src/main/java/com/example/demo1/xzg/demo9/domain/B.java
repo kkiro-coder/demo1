@@ -4,6 +4,7 @@ public class B extends A{
     private boolean a;
     private char b;
     private long c;
+    private int e;
 
     private String d = "abc";
     private MyObject myObject;
