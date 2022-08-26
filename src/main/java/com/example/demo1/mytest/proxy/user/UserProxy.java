@@ -6,10 +6,10 @@ import java.util.Objects;
 
 public class UserProxy implements InvocationHandler {
 
-    private UserService userService;
+    private Object proxiedBean;
 
-    public UserProxy(UserService userService) {
-        this.userService = userService;
+    public UserProxy(Object proxiedBean) {
+        this.proxiedBean = proxiedBean;
     }
 
     @Override
@@ -20,7 +20,7 @@ public class UserProxy implements InvocationHandler {
                 System.out.println(arg);
             }
         }
-        Object res = method.invoke(userService, args);
+        Object res = method.invoke(proxiedBean, args);
         long end = System.currentTimeMillis();
         System.out.println("方法执行时间："  + (end - start) + " 毫秒");
         return res;
