@@ -7,8 +7,10 @@ import java.nio.channels.*;
 
 public class NioEchoServer {
     public static void main(String[] args) throws IOException {
-        try (Selector selector = Selector.open(); // select 通常与非阻塞channel配合使用，selector本质也是操作系统提供的监听
-             ServerSocketChannel serverSocketChannel = ServerSocketChannel.open()) {
+        try (Selector selector = Selector.open();
+             // select 通常与非阻塞channel配合使用，将channel注册到selector中，
+             // selector本质也是操作系统提供的多路复用监听
+            ServerSocketChannel serverSocketChannel = ServerSocketChannel.open()) {
             serverSocketChannel.bind(new InetSocketAddress("127.0.0.1", 8801));
             serverSocketChannel.configureBlocking(false);
             serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT); // 用一个select专门注册为获取完成的连接事件
@@ -26,7 +28,7 @@ public class NioEchoServer {
                             try (SocketChannel clientChannel = (SocketChannel) selectionKey.channel()) {
                                 clientChannel.read(buffer);
                                 buffer.flip();
-                                if (buffer.hasRemaining()) {
+                                if (buffer.hasRemaining()) { // 客户端发什么返回什么
                                     clientChannel.write(buffer);
                                 }
                                 buffer.clear();

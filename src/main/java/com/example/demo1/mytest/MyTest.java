@@ -1160,8 +1160,16 @@ public class MyTest {
     @Test
     public void testFor() {
         int[] arr = {1, 3, 5, 7};
-        for (int i = arr.length - 1; i >= 0; i--) {
+        boolean flag = true;
+        for (int i = arr.length - 1; i >= 0 && flag; i--) {
             System.out.println(arr[i]);
+            for (int j = 0; j < 2; j++) {
+                if (arr[i] == 3) {
+                    flag = false;
+                    break;
+                }
+                System.out.println(arr[i]);
+            }
         }
     }
 
@@ -1326,6 +1334,87 @@ public class MyTest {
             TestPriority p = queue.poll();
             System.out.println(p);
         }
+    }
+
+    @Test
+    public void testGroupBy() {
+        List<MyDemo> myDemos = new ArrayList<>();
+        for (int i = 1; i <= 24; i++) {
+            myDemos.add(new MyDemo(i, "gp" + (i % 5)));
+        }
+        Map<String, List<MyDemo>> collect = myDemos.stream()
+                .sorted(Comparator.comparing(MyDemo::getKey).reversed()
+                        .thenComparing(Comparator.comparing(MyDemo::getId).reversed()))
+                .collect(groupingBy(MyDemo::getKey, LinkedHashMap::new, toList()));
+        collect.forEach((k, v) -> System.out.println(k + "=>" + v));
+    }
+
+    private static class MyDemo{
+        private Integer id;
+        private String key;
+
+        public MyDemo(Integer id, String key) {
+            this.id = id;
+            this.key = key;
+        }
+
+
+        public Integer getId() {
+            return id;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        @Override
+        public String toString() {
+            return "MyDemo{" +
+                    "id=" + id +
+                    ", key='" + key + '\'' +
+                    '}';
+        }
+    }
+
+    @Test
+    public void testFor2() {
+        Node node = buildLink(Arrays.asList(1, 2, 3, 4, 5));
+        for (Node cur = node; cur != null; cur = cur.next) {
+            System.out.println(cur);
+        }
+    }
+
+    private Node buildLink(List<Integer> list) {
+        Node head = new Node(null);
+        Node pre = head;
+        for (Integer data : list) {
+            Node node = new Node(data);
+            node.pre = pre;
+            pre.next = node;
+            pre = node;
+        }
+        return head;
+    }
+
+    static final class Node{
+        Object data;
+        Node pre;
+        Node next;
+
+        public Node(Object data) {
+            this.data = data;
+        }
+
+        @Override
+        public String toString() {
+            return "Node{" +
+                    "data=" + data +
+                    '}';
+        }
+    }
+
+    @Test
+    public void testTreeMapRB() {
 
     }
 }
