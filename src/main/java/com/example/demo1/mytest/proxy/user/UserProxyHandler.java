@@ -4,11 +4,11 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
-public class UserProxy implements InvocationHandler {
+public class UserProxyHandler implements InvocationHandler {
 
     private Object proxiedBean;
 
-    public UserProxy(Object proxiedBean) {
+    public UserProxyHandler(Object proxiedBean) {
         this.proxiedBean = proxiedBean;
     }
 

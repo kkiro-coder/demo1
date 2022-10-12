@@ -13,7 +13,7 @@ public class ProxyTest {
     @Test
     public void testJdkProxy() {
         Object o = Proxy.newProxyInstance(
-                UserService.class.getClassLoader(), UserService.class.getInterfaces(), new UserProxy(new UserService()));
+                UserService.class.getClassLoader(), UserService.class.getInterfaces(), new UserProxyHandler(new UserService()));
         ProxyUtil.writeByteCode2File("UserProxyMemory", UserService.class.getInterfaces(), "UserProxyMemory.class");
         UserAction userActionProxy = (UserAction) o;
         userActionProxy.login("kkiro", "8023");
