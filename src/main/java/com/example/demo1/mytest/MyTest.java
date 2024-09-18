@@ -1,6 +1,16 @@
 package com.example.demo1.mytest;
 
 
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.annotation.ExcelIgnore;
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.write.style.*;
+import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.enums.poi.FillPatternTypeEnum;
+import com.alibaba.excel.read.listener.ReadListener;
+import com.alibaba.excel.read.metadata.holder.ReadSheetHolder;
+import com.alibaba.excel.write.metadata.WriteSheet;
 import com.alibaba.fastjson.JSON;
 import com.example.demo1.entity.UploadData;
 import com.example.demo1.jpatest.entity.TestData;
@@ -10,8 +20,10 @@ import com.example.demo1.mytest.ps.Parent;
 import com.example.demo1.mytest.ps.SonOne;
 import com.example.demo1.mytest.ps.SonTwo;
 import com.example.demo1.tenum.TestEnum;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.http.HttpEntity;
@@ -23,6 +35,9 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
@@ -45,6 +60,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -1160,17 +1176,14 @@ public class MyTest {
     @Test
     public void testFor() {
         int[] arr = {1, 3, 5, 7};
-        boolean flag = true;
-        for (int i = arr.length - 1; i >= 0 && flag; i--) {
-            System.out.println(arr[i]);
-            for (int j = 0; j < 2; j++) {
-                if (arr[i] == 3) {
-                    flag = false;
-                    break;
-                }
-                System.out.println(arr[i]);
-            }
+        int start = 0;
+        int offset = 100;
+        int total = 1024;
+        start += offset;
+        for (; start + offset < total; start += offset) {
+            System.out.println(start);
         }
+        System.out.println(start);
     }
 
     @Test
@@ -1320,20 +1333,28 @@ public class MyTest {
 
     @Test
     public void testPriorityQueue() {
-        PriorityQueue<TestPriority> queue = new PriorityQueue<>(Comparator.comparing(TestPriority::getPriority).thenComparing(TestPriority::getName));
+//        PriorityQueue<TestPriority> queue = new PriorityQueue<>(Comparator.comparing(TestPriority::getPriority).thenComparing(TestPriority::getName));
+//
+//        queue.offer(new TestPriority(3, "3p1"));
+//        queue.offer(new TestPriority(4, "4p"));
+//        queue.offer(new TestPriority(3, "3p2"));
+//        queue.offer(new TestPriority(3, "3p3"));
+//        queue.offer(new TestPriority(2, "2p"));
+//        queue.offer(new TestPriority(1, "1p"));
+//
+//
+//        while (!queue.isEmpty()) {
+//            TestPriority p = queue.poll();
+//            System.out.println(p);
+//        }
 
-        queue.offer(new TestPriority(3, "3p1"));
-        queue.offer(new TestPriority(4, "4p"));
-        queue.offer(new TestPriority(3, "3p2"));
-        queue.offer(new TestPriority(3, "3p3"));
-        queue.offer(new TestPriority(2, "2p"));
-        queue.offer(new TestPriority(1, "1p"));
-
-
-        while (!queue.isEmpty()) {
-            TestPriority p = queue.poll();
-            System.out.println(p);
-        }
+        PriorityQueue<Long> queue = new PriorityQueue<>((o1, o2) -> (int)(o2 - o1));
+        queue.add(6L);
+        queue.add(3L);
+        queue.add(5L);
+        queue.add(9L);
+        queue.add(7L);
+        System.out.println(queue.peek());
     }
 
     @Test
@@ -1412,14 +1433,168 @@ public class MyTest {
         }
     }
 
-    @Test
-    public void testTreeMapRB() {
-
+    @Data
+    public static final class StudentExcelModel {
+        @ExcelProperty(value = "班级")
+        private String className;
+        @ExcelProperty(value = "学号")
+        private String stuNumber;
+        @ExcelProperty(value = "姓名")
+        private String stuName;
     }
 
     @Test
-    public void testIter() {
+    public void convertExcel() {
 
+        String fileName1 = "F:\\wsy_file\\all_student_data.xls";
+        List<StudentExcelModel> cachedDataList = new ArrayList<>();
+        EasyExcel.read(fileName1, StudentExcelModel.class, new ReadListener<StudentExcelModel>() {
+            @Override
+            public void invoke(StudentExcelModel data, AnalysisContext context) {
+                if (data.getClassName().startsWith("高一")) {
+                    cachedDataList.add(data);
+                }
+            }
+
+            @Override
+            public void doAfterAllAnalysed(AnalysisContext context) {
+
+            }
+        }).sheet().doRead();
+
+        List<StudentClassExcelModel> classExcelModels = new ArrayList<>();
+
+        String fileName2 = "F:\\wsy_file\\student_classify.xls";
+        EasyExcel.read(fileName2, StudentClassExcelModel.class, new ReadListener<StudentClassExcelModel>() {
+            @Override
+            public void invoke(StudentClassExcelModel data, AnalysisContext context) {
+                ReadSheetHolder readSheetHolder = context.readSheetHolder();
+                String sheetName = readSheetHolder.getSheetName();
+                data.setClassName("高一" + data.getClassName());
+                data.setSheetName(sheetName);
+                classExcelModels.add(data);
+            }
+
+            @Override
+            public void doAfterAllAnalysed(AnalysisContext context) {
+
+            }
+        }).headRowNumber(2).doReadAll();
+
+        Map<String, String> stuNameNumMap = cachedDataList.stream().collect(toMap(data -> data.getStuName(), data -> data.getStuNumber(), (v1, v2) -> v1));
+
+        List<StudentWriteClassExcelModel> writeDataList = new ArrayList<>();
+        for (StudentClassExcelModel classExcelModel : classExcelModels) {
+            String number = stuNameNumMap.get(classExcelModel.getName());
+            if (StringUtils.isEmpty(number)) {
+                System.out.println(classExcelModel.getName() + "学号未获取到");
+                continue;
+            }
+            StudentWriteClassExcelModel writeData = new StudentWriteClassExcelModel(classExcelModel, number);
+            writeDataList.add(writeData);
+        }
+//        System.out.println(writeDataList);
+        Map<String, List<StudentWriteClassExcelModel>> writeDataGroup = writeDataList.stream().collect(groupingBy(data -> data.getSheetName(), LinkedHashMap::new, Collectors.toList()));
+        doWrite(writeDataGroup);
     }
+
+    private void doWrite(Map<String, List<StudentWriteClassExcelModel>> writeDataGroup) {
+//        String fileName = TestFileUtil.getPath() + "repeatedWrite" + System.currentTimeMillis() + ".xlsx";
+        String fileName =  "F:\\wsy_file\\student_classify_" + System.currentTimeMillis() + ".xlsx";
+        // 这里 指定文件
+        try (ExcelWriter excelWriter = EasyExcel.write(fileName, StudentWriteClassExcelModel.class).build()) {
+            // 去调用写入,这里我调用了五次，实际使用时根据数据库分页的总的页数来。这里最终会写到5个sheet里面
+            for (Map.Entry<String, List<StudentWriteClassExcelModel>> sheetEntry : writeDataGroup.entrySet()) {
+                String sheetName = sheetEntry.getKey();
+                WriteSheet writeSheet = EasyExcel.writerSheet(sheetName).relativeHeadRowIndex(0).build();
+                AtomicInteger count = new AtomicInteger(1);
+                List<StudentWriteClassExcelModel> sheetDataList = sheetEntry.getValue().stream()
+                        .sorted(Comparator.comparing(data -> data.getNumber()))
+                        .peek(data -> data.setSeq(count.getAndIncrement()))
+                        .collect(toList());
+                excelWriter.write(sheetDataList, writeSheet);
+            }
+        }
+    }
+
+    @Data
+    public static class StudentClassExcelModel {
+        @ExcelProperty(value = "序号")
+        private Integer seq;
+        @ExcelProperty(value = "学生姓名")
+        private String name;
+        @ExcelProperty(value = "性别")
+        private String male;
+        @ExcelProperty(value = "班级")
+        private String className;
+        @ExcelIgnore
+        private String sheetName;
+    }
+
+    @Data
+    @HeadStyle(fillPatternType = FillPatternTypeEnum.SOLID_FOREGROUND, fillForegroundColor = 1)
+    @HeadFontStyle(fontHeightInPoints = 20)
+    @ContentFontStyle(fontHeightInPoints = 14)
+    public static class StudentWriteClassExcelModel {
+        @ExcelProperty(value = {"选课标题","序号"})
+        @ColumnWidth(value = 10)
+        private Integer seq;
+        @ExcelProperty(value = {"选课标题","班级"})
+        @ColumnWidth(value = 20)
+        private String className;
+        @ExcelProperty(value = {"选课标题","学号"})
+        @ColumnWidth(value = 20)
+        private Integer number;
+        @ExcelProperty(value = {"选课标题","学生姓名"})
+        @ColumnWidth(value = 20)
+        private String name;
+        @ExcelProperty(value = {"选课标题","性别"})
+        @ColumnWidth(value = 10)
+        private String male;
+        @ExcelProperty(value = {"选课标题","成绩"})
+        @ColumnWidth(value = 20)
+        private String score;
+
+        @ExcelProperty(value = {"选课"})
+        @ColumnWidth(value = 20)
+        private String sheetName;
+
+        public StudentWriteClassExcelModel(StudentClassExcelModel m1, String number) {
+            this.seq = m1.getSeq();
+            this.number = Integer.valueOf(number);
+            this.name = m1.getName();
+            this.male = m1.getMale();
+            this.className = m1.getClassName();
+            this.sheetName = m1.getSheetName();
+            this.score = "";
+        }
+    }
+
+    @Test
+    public void testRange() {
+        IntStream.rangeClosed(1, 1).forEach(System.out::println);
+    }
+
+
+    @Test
+    public void testUrl() throws InterruptedException {
+        String test = "测试应用【应用名first】123【4556aaaa】";
+        int start = 0;
+        int end = 0;
+        char[] charArray = test.toCharArray();
+        for (int i = 0; i < charArray.length; i++) {
+            if (charArray[i] == '【') {
+                start = i;
+                continue;
+            }
+            if (charArray[i] == '】') {
+                end = i;
+                break;
+            }
+        }
+        System.out.println( test.substring(start + 1, end));
+    }
+
+
 }
 

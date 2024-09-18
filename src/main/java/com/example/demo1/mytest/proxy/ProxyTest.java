@@ -3,7 +3,6 @@ package com.example.demo1.mytest.proxy;
 
 import com.example.demo1.mytest.proxy.user.*;
 import com.example.demo1.utils.ProxyUtil;
-import net.sf.cglib.proxy.Enhancer;
 import org.junit.Test;
 
 import java.lang.reflect.Proxy;
@@ -24,13 +23,13 @@ public class ProxyTest {
 
     @Test
     public void testCglibProxy() {
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(UserSvc.class);
-        enhancer.setCallback(new UserCglibProxy(new UserSvc(new UserService())));
-        UserSvc proxy = (UserSvc) enhancer.create();
-        proxy.login("cglib_user", "802311");
-        proxy.changeNick("cglib_nick");
-        proxy.changePwd("8023cglib");
-        proxy.logout();
+//        Enhancer enhancer = new Enhancer();
+//        enhancer.setSuperclass(UserSvc.class);
+//        enhancer.setCallback(new UserCglibProxy(new UserSvc(new UserService())));
+//        UserSvc proxy = (UserSvc) enhancer.create();
+//        proxy.login("cglib_user", "802311");
+//        proxy.changeNick("cglib_nick");
+//        proxy.changePwd("8023cglib");
+//        proxy.logout();
     }
 }
